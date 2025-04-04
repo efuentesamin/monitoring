@@ -1,0 +1,62 @@
+version: "3.7"
+name: "monitoring-stack"
+
+services:
+    grafana:
+        image: grafana/grafana-oss
+        container_name: grafana
+        ports:
+          - "3000:3000"
+        user: "0"
+        volumes:
+          - grafana-data:/var/lib/grafana
+        networks:
+            - monitoring-network
+        restart: unless-stopped
+
+    node-red:
+        image: nodered/node-red:latest
+        container_name: node-red
+        ports:
+          - "1880:1880"
+        volumes:
+          - node-red-data:/data
+        networks:
+            - monitoring-network
+        restart: unless-stopped
+    
+    influxdb:
+        image: influxdb:2
+        container_name: influxdb
+        ports:
+          - "8086:8086"        
+        volumes:
+          - influxdb-data:/var/lib/influxdb2
+          - influxdb-config:/etc/influxdb2
+        networks:
+            - monitoring-network
+        restart: unless-stopped
+
+    mosquitto:
+        image: eclipse-mosquitto
+        container_name: mosquitto
+        ports:
+            - "1883:1883" #default mqtt port
+            - "9001:9001" #default mqtt port for websockets
+        volumes:
+            - ./mqtt/config:/mosquitto/config
+            - mosquitto-data:/mosquitto
+        networks:
+            - monitoring-network
+        restart: unless-stopped
+
+volumes:
+    mosquitto-data:
+    influxdb-data:
+    influxdb-config:
+    grafana-data:        
+    node-red-data:
+
+networks:
+    default:
+        name: monitoring-network
